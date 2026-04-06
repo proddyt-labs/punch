@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: timetracker
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-timetracker_pass}
+      POSTGRES_DB: timetracker
+    volumes:
+      - timetracker-db:/var/lib/postgresql/data
+    networks:
+      - timetracker-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://timetracker:${DB_PASSWORD:-timetracker_pass}@db:5432/timetracker
+      PORT: 3001
+    networks:
+      - timetracker-net
+    labels:
+      - "traefik.enable=false"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - timetracker-net
+
+volumes:
+  timetracker-db:
+
+networks:
+  timetracker-net:
+    driver: bridge

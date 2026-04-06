@@ -1,0 +1,12 @@
+node_modules/
+.env
+dist/
+build/
+backend/prisma/dev.db*
+*.tsbuildinfo
+*.log
+.DS_Store
+Thumbs.db
+coverage/
+frontend/package-lock.json
+backend/package-lock.json

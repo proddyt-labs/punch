@@ -1,0 +1,7 @@
+# docker-compose.override.yml — colocar na raiz do projeto no servidor
+# Se for usar com Authentik + Nginx no servidor
+
+services:
+  frontend:
+    ports:
+      - "127.0.0.1:3000:80"  # Só acessível via localhost (nginx do servidor)
