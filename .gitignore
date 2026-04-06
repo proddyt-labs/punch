@@ -10,3 +10,5 @@ Thumbs.db
 coverage/
 frontend/package-lock.json
 backend/package-lock.json
+
+dev.sqlite
