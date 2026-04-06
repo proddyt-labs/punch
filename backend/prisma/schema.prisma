@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  name      String?
-  records   AttendanceRecord[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  name          String?
+  passwordHash  String?
+  records       AttendanceRecord[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("users")
 }
