@@ -9,7 +9,13 @@ import dashboardRoutes from "./routes/dashboard.routes";
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
+// Avoid browser/proxy caching for API responses (prevents 304 on dynamic endpoints).
+app.set("etag", false);
 app.use(cors());
+app.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 app.use(express.json());
 
 // --- Routes ---
