@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { RouterLink, RouterView, useRouter } from "vue-router";
 import { useUserStore } from "./stores/user";
 
 const router = useRouter();
 const store = useUserStore();
+
+onMounted(() => {
+  void store.fetchMe();
+});
 
 function handleLogout() {
   store.logout();
