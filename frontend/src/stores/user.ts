@@ -13,7 +13,7 @@ export const useUserStore = defineStore("user", () => {
   const user = ref<User | null>(null);
   const loading = ref(false);
 
-  const isLoggedIn = computed(() => user.value !== null);
+  const isLoggedIn = computed(() => user.value !== null || !!getToken());
   const displayName = computed(() => user.value?.name ?? user.value?.username ?? "Usuário");
 
   function getToken(): string | null {
@@ -61,8 +61,6 @@ export const useUserStore = defineStore("user", () => {
   }
 
   async function fetchMe() {
-    const token = getToken();
-    if (!token) return;
     try {
       const { data } = await api.get<{ user: User }>("/auth/me");
       user.value = data.user;
@@ -75,7 +73,10 @@ export const useUserStore = defineStore("user", () => {
   function logout() {
     clearToken();
     user.value = null;
+    if (!import.meta.env.DEV) {
+      window.location.href = "/outpost.goauthentik.io/sign_out";
+    }
   }
 
-  return { user, loading, isLoggedIn, displayName, token: getToken(), login, logout, fetchMe };
+  return { user, loading, isLoggedIn, displayName, token: getToken(), login, logout, fetchMe, register };
 });

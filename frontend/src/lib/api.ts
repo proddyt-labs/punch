@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "/time-tracker/api",
+  baseURL: import.meta.env.DEV ? "/time-tracker/api" : "/api",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -14,13 +14,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 — auto-logout
+// Handle 401 — auto-logout (dev: redirect to login, prod: refresh to trigger Auth redirect)
 api.interceptors.response.use(
   (r) => r,
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem("auth_token");
-      window.location.href = "/time-tracker/login";
+      if (import.meta.env.DEV) {
+        window.location.href = "/time-tracker/login";
+      } else {
+        window.location.reload();
+      }
     }
     return Promise.reject(err);
   }

@@ -47,4 +47,73 @@ router.get("/history", requireAuth, async (req, res) => {
   res.json(records);
 });
 
+// Deleta um registro do usuario autenticado
+router.delete("/records/:id", requireAuth, async (req, res) => {
+  const { id: userId } = getCurrentUser(req);
+  const recordIdParam = req.params.id;
+  const recordId = Array.isArray(recordIdParam) ? recordIdParam[0] : recordIdParam;
+
+  if (!recordId) {
+    return res.status(400).json({ error: "Record id is required" });
+  }
+
+  const record = await prisma.attendanceRecord.findUnique({
+    where: { id: recordId },
+  });
+
+  if (!record) {
+    return res.status(404).json({ error: "Record not found" });
+  }
+
+  if (record.userId !== userId) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  await prisma.attendanceRecord.delete({
+    where: { id: recordId },
+  });
+
+  res.status(204).send();
+});
+
+// Edita o timestamp de um registro
+router.patch("/records/:id", requireAuth, async (req, res) => {
+  const { id: userId } = getCurrentUser(req);
+  const recordIdParam = req.params.id;
+  const recordId = Array.isArray(recordIdParam) ? recordIdParam[0] : recordIdParam;
+  const { timestamp } = req.body;
+
+  if (!recordId) {
+    return res.status(400).json({ error: "Record id is required" });
+  }
+
+  if (!timestamp) {
+    return res.status(400).json({ error: "Timestamp is required" });
+  }
+
+  const parsedTimestamp = new Date(timestamp);
+  if (isNaN(parsedTimestamp.getTime())) {
+    return res.status(400).json({ error: "Invalid timestamp format" });
+  }
+
+  const record = await prisma.attendanceRecord.findUnique({
+    where: { id: recordId },
+  });
+
+  if (!record) {
+    return res.status(404).json({ error: "Record not found" });
+  }
+
+  if (record.userId !== userId) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const updated = await prisma.attendanceRecord.update({
+    where: { id: recordId },
+    data: { timestamp: parsedTimestamp },
+  });
+
+  res.json(updated);
+});
+
 export default router;

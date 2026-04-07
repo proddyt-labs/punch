@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
-  base: "/time-tracker/",
+  base: "/",
   server: {
     proxy: {
       // Dev mode: frontend serve em /time-tracker/, proxy para backend
