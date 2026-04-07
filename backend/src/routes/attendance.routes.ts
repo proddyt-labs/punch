@@ -4,12 +4,34 @@ import { prisma } from "../lib/prisma";
 
 const router = Router();
 
+function resolveTimestampInput(value: unknown): Date | null {
+  if (value === undefined || value === null || value === "") {
+    return new Date();
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
 // Marca ponto de entrada
 router.post("/clock-in", requireAuth, async (req, res) => {
   const { id: userId } = getCurrentUser(req);
+  const timestamp = resolveTimestampInput(req.body?.timestamp);
+
+  if (!timestamp) {
+    return res.status(400).json({ error: "Invalid timestamp format" });
+  }
 
   const record = await prisma.attendanceRecord.create({
-    data: { userId, type: "CLOCK_IN" },
+    data: { userId, type: "CLOCK_IN", timestamp },
   });
 
   res.status(201).json(record);
@@ -18,9 +40,14 @@ router.post("/clock-in", requireAuth, async (req, res) => {
 // Marca ponto de saida
 router.post("/clock-out", requireAuth, async (req, res) => {
   const { id: userId } = getCurrentUser(req);
+  const timestamp = resolveTimestampInput(req.body?.timestamp);
+
+  if (!timestamp) {
+    return res.status(400).json({ error: "Invalid timestamp format" });
+  }
 
   const record = await prisma.attendanceRecord.create({
-    data: { userId, type: "CLOCK_OUT" },
+    data: { userId, type: "CLOCK_OUT", timestamp },
   });
 
   res.status(201).json(record);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { api } from "../lib/api";
 
 interface OverviewData {
@@ -24,6 +24,19 @@ interface ToastState {
   type: "success" | "error" | "info";
 }
 
+function toLocalDateInput(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function toLocalTimeInput(date: Date): string {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 const stats = ref<Stats>({
   todayHours: "0h 0min",
   todayEntries: 0,
@@ -32,9 +45,21 @@ const stats = ref<Stats>({
   lastOut: null,
 });
 
+const selectedDate = ref(toLocalDateInput(new Date()));
+const launchTime = ref(toLocalTimeInput(new Date()));
 const toast = ref<ToastState | null>(null);
 const isLoading = ref(false);
 let toastTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const selectedDateLabel = computed(() => {
+  const [year, month, day] = selectedDate.value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+});
 
 function showToast(message: string, type: ToastState["type"] = "success") {
   if (toastTimeout) clearTimeout(toastTimeout);
@@ -52,24 +77,47 @@ function formatTime(timestamp: string): string {
   });
 }
 
-function formatDate(timestamp: string): string {
-  return new Date(timestamp).toLocaleDateString("pt-BR", {
+function formatDateTime(timestamp: string): string {
+  return new Date(timestamp).toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function calculateHours(inTime: string, outTime: string): string {
-  const diff = new Date(outTime).getTime() - new Date(inTime).getTime();
-  const hours = Math.floor(diff / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  return `${hours}h ${minutes}min`;
+function buildLaunchTimestamp(): string | null {
+  const [year, month, day] = selectedDate.value.split("-").map(Number);
+  const [hours, minutes] = launchTime.value.split(":").map(Number);
+
+  if ([year, month, day, hours, minutes].some((value) => Number.isNaN(value))) {
+    return null;
+  }
+
+  const launchDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+  if (
+    launchDate.getFullYear() !== year ||
+    launchDate.getMonth() !== month - 1 ||
+    launchDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return launchDate.toISOString();
+}
+
+function goToToday() {
+  const now = new Date();
+  selectedDate.value = toLocalDateInput(now);
+  launchTime.value = toLocalTimeInput(now);
+  void fetchOverview();
 }
 
 async function fetchOverview() {
   try {
-    const { data } = await api.get<OverviewData>("/dashboard/overview");
+    const { data } = await api.get<OverviewData>("/dashboard/overview", {
+      params: { date: selectedDate.value },
+    });
 
     stats.value.todayEntries = data.clockInCount;
     stats.value.todayExits = data.clockOutCount;
@@ -99,11 +147,16 @@ async function fetchOverview() {
 }
 
 async function clockIn() {
+  const timestamp = buildLaunchTimestamp();
+  if (!timestamp) {
+    showToast("Data/hora de lançamento inválida", "error");
+    return;
+  }
+
   isLoading.value = true;
   try {
-    const { data } = await api.post<{ timestamp: string }>("/attendance/clock-in");
-    const time = formatTime(data.timestamp);
-    showToast(`Entrada registrada às ${time}`, "success");
+    const { data } = await api.post<{ timestamp: string }>("/attendance/clock-in", { timestamp });
+    showToast(`Entrada registrada em ${formatDateTime(data.timestamp)}`, "success");
     await fetchOverview();
   } catch (err: any) {
     showToast(err.response?.data?.error ?? "Erro ao registrar entrada", "error");
@@ -113,11 +166,16 @@ async function clockIn() {
 }
 
 async function clockOut() {
+  const timestamp = buildLaunchTimestamp();
+  if (!timestamp) {
+    showToast("Data/hora de lançamento inválida", "error");
+    return;
+  }
+
   isLoading.value = true;
   try {
-    const { data } = await api.post<{ timestamp: string }>("/attendance/clock-out");
-    const time = formatTime(data.timestamp);
-    showToast(`Saída registrada às ${time}`, "success");
+    const { data } = await api.post<{ timestamp: string }>("/attendance/clock-out", { timestamp });
+    showToast(`Saída registrada em ${formatDateTime(data.timestamp)}`, "success");
     await fetchOverview();
   } catch (err: any) {
     showToast(err.response?.data?.error ?? "Erro ao registrar saída", "error");
@@ -125,6 +183,10 @@ async function clockOut() {
     isLoading.value = false;
   }
 }
+
+watch(selectedDate, () => {
+  void fetchOverview();
+});
 
 onMounted(fetchOverview);
 </script>
@@ -156,14 +218,46 @@ onMounted(fetchOverview);
     </Transition>
 
     <!-- Header -->
-    <h1 class="text-2xl font-bold text-white mb-8">
-      {{ new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) }}
+    <h1 class="text-2xl font-bold text-white mb-6">
+      {{ selectedDateLabel }}
     </h1>
+
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
+      <div class="flex flex-col md:flex-row gap-4 md:items-end">
+        <div class="flex-1">
+          <label for="dash-date" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Dia</label>
+          <input
+            id="dash-date"
+            v-model="selectedDate"
+            type="date"
+            class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+        <div class="md:w-48">
+          <label for="dash-time" class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Hora do Lançamento</label>
+          <input
+            id="dash-time"
+            v-model="launchTime"
+            type="time"
+            class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+        <button
+          @click="goToToday"
+          class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white rounded-lg transition-colors"
+        >
+          Ir Para Hoje
+        </button>
+      </div>
+      <p class="text-xs text-gray-500 mt-3">
+        Os botões de lançamento vão registrar no dia {{ selectedDate }} às {{ launchTime }}.
+      </p>
+    </div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Horas Hoje</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Horas no Dia</p>
         <p class="text-2xl font-bold text-emerald-400">{{ stats.todayHours }}</p>
       </div>
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -175,7 +269,7 @@ onMounted(fetchOverview);
         <p class="text-2xl font-bold text-white">{{ stats.lastOut ?? "--:--" }}</p>
       </div>
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Registros Hoje</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Registros no Dia</p>
         <p class="text-2xl font-bold text-white">{{ stats.todayEntries + stats.todayExits }}</p>
       </div>
     </div>
