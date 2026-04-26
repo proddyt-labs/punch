@@ -6,7 +6,9 @@ import { useUserStore } from "./stores/user";
 const store = useUserStore();
 
 onMounted(() => {
-  void store.fetchMe();
+  if (localStorage.getItem("auth_token")) {
+    void store.fetchMe();
+  }
 });
 
 function handleLogout() {

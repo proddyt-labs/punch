@@ -17,7 +17,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    if (err.response?.status === 401) {
+    // Não redireciona pro Gate se estamos no /auth/callback (impede loop durante a troca de code)
+    const isCallback = window.location.pathname === "/auth/callback";
+    if (err.response?.status === 401 && !isCallback) {
       localStorage.removeItem("auth_token");
       window.location.href = buildAuthorizeUrl();
     }
