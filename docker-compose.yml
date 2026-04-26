@@ -22,8 +22,12 @@ services:
     environment:
       DATABASE_URL: postgresql://timetracker:${DB_PASSWORD:-timetracker_pass}@db:5432/timetracker
       PORT: 3001
+      GATE_URL: http://gate-backend:3100
+      GATE_CLIENT_ID: punch
+      GATE_CLIENT_SECRET: ${GATE_CLIENT_SECRET:-1cd38a3a-8492-4731-bef6-e405dd6d8671}
     networks:
       - timetracker-net
+      - proxy_net
     labels:
       - "traefik.enable=false"
 
