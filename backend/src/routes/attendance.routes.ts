@@ -21,6 +21,19 @@ function resolveTimestampInput(value: unknown): Date | null {
   return parsed;
 }
 
+// Status atual — último registro geral do usuário
+router.get("/status", requireAuth, async (req, res) => {
+  const { id: userId } = getCurrentUser(req);
+  const lastRecord = await prisma.attendanceRecord.findFirst({
+    where: { userId },
+    orderBy: { timestamp: "desc" },
+  });
+  res.json({
+    isWorking: lastRecord?.type === "CLOCK_IN",
+    lastRecord: lastRecord ?? null,
+  });
+});
+
 // Marca ponto de entrada
 router.post("/clock-in", requireAuth, async (req, res) => {
   const { id: userId } = getCurrentUser(req);

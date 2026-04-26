@@ -1,0 +1,29 @@
+{
+  "name": "Time Tracker",
+  "short_name": "Time",
+  "description": "Controle de ponto",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#020617",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar Entrada",
+      "short_name": "Entrada",
+      "url": "/quick/clock-in",
+      "icons": [{ "src": "/icons/icon-clockin-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Registrar Saída",
+      "short_name": "Saída",
+      "url": "/quick/clock-out",
+      "icons": [{ "src": "/icons/icon-clockout-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
