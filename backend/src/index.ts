@@ -23,6 +23,22 @@ app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
+// --- Internal widget endpoint (Gate only, no public access) ---
+app.get("/internal/widget", async (req, res) => {
+  const gateId = req.query.gateId as string;
+  if (!gateId) { res.status(400).json({ error: "gateId required" }); return; }
+  const user = await prisma.user.findUnique({ where: { gateId } });
+  if (!user) { res.json({ status: "unknown" }); return; }
+  const last = await prisma.attendanceRecord.findFirst({
+    where: { userId: user.id },
+    orderBy: { timestamp: "desc" },
+  });
+  res.json({
+    status: last?.type === "CLOCK_IN" ? "in" : "out",
+    since: last?.timestamp ?? null,
+  });
+});
+
 // --- Healthcheck ---
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
