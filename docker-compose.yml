@@ -32,10 +32,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "3000:80"
     networks:
       - timetracker-net
+      - proxy_net
 
 volumes:
   timetracker-db:
@@ -43,3 +42,5 @@ volumes:
 networks:
   timetracker-net:
     driver: bridge
+  proxy_net:
+    external: true
