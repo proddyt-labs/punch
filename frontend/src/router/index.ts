@@ -1,28 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import History from "../views/History.vue";
-import LoginView from "../views/LoginView.vue";
-
-const AUTH_ROUTES = new Set(["login"]);
+import AuthCallback from "../views/AuthCallback.vue";
+import { buildAuthorizeUrl } from "../stores/user";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.DEV ? "/time-tracker/" : "/"),
   routes: [
-    { path: "/login", name: "login", component: LoginView, meta: { guest: true } },
+    { path: "/auth/callback", name: "callback", component: AuthCallback, meta: { guest: true } },
     { path: "/", name: "dashboard", component: Dashboard },
     { path: "/history", name: "history", component: History },
   ],
 });
 
 router.beforeEach((to) => {
+  if (to.meta.guest) return true;
   const token = localStorage.getItem("auth_token");
-  const isDev = import.meta.env.DEV;
-  if (!token && !to.meta.guest && isDev) {
-    return { name: "login" };
+  if (!token) {
+    window.location.href = buildAuthorizeUrl();
+    return false;
   }
-  if (token && to.meta.guest) {
-    return { name: "dashboard" };
-  }
+  return true;
 });
 
 export default router;

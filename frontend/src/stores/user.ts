@@ -9,16 +9,26 @@ export interface User {
   email: string;
 }
 
+const GATE_URL = import.meta.env.VITE_GATE_URL ?? "http://localhost:3100";
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "time-work";
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/time-tracker/auth/callback";
+
+export function buildAuthorizeUrl(): string {
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    scope: "openid profile",
+  });
+  return `${GATE_URL}/oauth/authorize?${params}`;
+}
+
 export const useUserStore = defineStore("user", () => {
   const user = ref<User | null>(null);
   const loading = ref(false);
 
-  const isLoggedIn = computed(() => user.value !== null || !!getToken());
+  const isLoggedIn = computed(() => !!localStorage.getItem("auth_token"));
   const displayName = computed(() => user.value?.name ?? user.value?.username ?? "Usuário");
-
-  function getToken(): string | null {
-    return localStorage.getItem("auth_token");
-  }
 
   function setToken(token: string) {
     localStorage.setItem("auth_token", token);
@@ -28,33 +38,19 @@ export const useUserStore = defineStore("user", () => {
     localStorage.removeItem("auth_token");
   }
 
-  async function login(username: string, password: string) {
-    loading.value = true;
-    try {
-      const { data } = await api.post<{ token: string; user: User }>("/auth/login", { username, password });
-      setToken(data.token);
-      user.value = data.user;
-      return { success: true } as const;
-    } catch (err: any) {
-      return { success: false, error: err.response?.data?.error ?? "Erro ao fazer login" } as const;
-    } finally {
-      loading.value = false;
-    }
+  function login() {
+    window.location.href = buildAuthorizeUrl();
   }
 
-  async function register(username: string, email: string, password: string) {
+  async function handleCallback(code: string) {
     loading.value = true;
     try {
-      const { data } = await api.post<{ token: string; user: User }>("/auth/register", {
-        username,
-        email,
-        password,
+      const { data } = await api.post<{ access_token: string }>("/auth/callback", {
+        code,
+        redirectUri: REDIRECT_URI,
       });
-      setToken(data.token);
-      user.value = data.user;
-      return { success: true } as const;
-    } catch (err: any) {
-      return { success: false, error: err.response?.data?.error ?? "Erro ao criar conta" } as const;
+      setToken(data.access_token);
+      await fetchMe();
     } finally {
       loading.value = false;
     }
@@ -73,10 +69,8 @@ export const useUserStore = defineStore("user", () => {
   function logout() {
     clearToken();
     user.value = null;
-    if (!import.meta.env.DEV) {
-      window.location.href = "/outpost.goauthentik.io/sign_out";
-    }
+    window.location.href = `${GATE_URL}/auth/logout`;
   }
 
-  return { user, loading, isLoggedIn, displayName, token: getToken(), login, logout, fetchMe, register };
+  return { user, loading, isLoggedIn, displayName, login, logout, fetchMe, handleCallback };
 });
