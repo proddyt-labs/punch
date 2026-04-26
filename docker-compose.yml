@@ -35,6 +35,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_GATE_URL: https://sso.proddyt.site
+        VITE_CLIENT_ID: punch
+        VITE_REDIRECT_URI: https://punch.proddyt.site/auth/callback
     container_name: punch-frontend
     restart: unless-stopped
     networks:
