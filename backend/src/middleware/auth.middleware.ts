@@ -74,5 +74,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
 export function getCurrentUser(req: Express.Request): AppUser {
   if (!req.user) throw new Error("User not set on request");
-  return req.user;
+  // Retorna apenas campos seguros (sem passwordHash, gateId, etc.)
+  const { id, username, email, name } = req.user;
+  return { id, username, email, name };
 }
