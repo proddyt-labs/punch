@@ -69,7 +69,8 @@ export const useUserStore = defineStore("user", () => {
   function logout() {
     clearToken();
     user.value = null;
-    window.location.href = `${GATE_URL}/auth/logout`;
+    const postLogout = encodeURIComponent(window.location.origin + "/");
+    window.location.href = `${GATE_URL}/auth/logout?post_logout_redirect_uri=${postLogout}`;
   }
 
   return { user, loading, isLoggedIn, displayName, login, logout, fetchMe, handleCallback };
