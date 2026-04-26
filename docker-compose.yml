@@ -31,6 +31,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: punch-frontend
     restart: unless-stopped
     networks:
       - timetracker-net
