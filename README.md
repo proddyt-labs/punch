@@ -1,4 +1,4 @@
-# Time Tracker
+# Punch
 
 Sistema interno de registro de ponto (entrada/saída) do trabalho, integrado ao stack do servidor via Docker + Nginx + Authentik (opcional).
 
@@ -33,13 +33,13 @@ npm run dev
 ## Deploy no Servidor
 
 ```bash
-cd ~ && git clone https://github.com/Proddy-0/time-tracker.git
-cd time-tracker
+cd ~ && git clone https://github.com/Proddy-0/punch.git
+cd punch
 
 docker compose up -d
 
 # Banco (se não tiver banco dedicado)
-docker exec authentik-postgresql psql -U authentik -d authentik -c "CREATE DATABASE \"time-tracker\";"
+docker exec authentik-postgresql psql -U authentik -d authentik -c "CREATE DATABASE \"punch\";"
 ```
 
 ## Nginx (servidor)
@@ -47,7 +47,7 @@ docker exec authentik-postgresql psql -U authentik -d authentik -c "CREATE DATAB
 No nginx do servidor (`~/nginx/`), adicionar:
 
 ```nginx
-location /time-tracker {
+location /punch {
     proxy_pass http://127.0.0.1:3000;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;

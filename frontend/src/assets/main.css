@@ -1,4 +1,13 @@
 @import "tailwindcss";
+
+:root {
+  --pu-primary: #22D3EE;
+  --pu-mid:     #06B6D4;
+  --pu-dark:    #0E7490;
+  --pu-bg:      #0B1622;
+  --pu-muted:   #67A0B5;
+}
+
 @layer base {
   body { @apply bg-gray-950 text-gray-100 min-h-screen font-sans; }
 }

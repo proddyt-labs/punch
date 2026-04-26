@@ -6,7 +6,7 @@ import QuickAction from "../views/QuickAction.vue";
 import { buildAuthorizeUrl } from "../stores/user";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.DEV ? "/time-tracker/" : "/"),
+  history: createWebHistory(import.meta.env.DEV ? "/punch/" : "/"),
   routes: [
     { path: "/auth/callback", name: "callback", component: AuthCallback, meta: { guest: true } },
     { path: "/", name: "dashboard", component: Dashboard },

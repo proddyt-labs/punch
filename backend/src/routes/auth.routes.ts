@@ -18,7 +18,7 @@ router.post("/callback", async (req, res) => {
   }
 
   const GATE_URL = process.env.GATE_URL ?? "http://localhost:3100";
-  const CLIENT_ID = process.env.GATE_CLIENT_ID ?? "time-work";
+  const CLIENT_ID = process.env.GATE_CLIENT_ID ?? "punch";
   const CLIENT_SECRET = process.env.GATE_CLIENT_SECRET ?? "";
 
   try {

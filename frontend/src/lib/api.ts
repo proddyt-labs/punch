@@ -2,7 +2,7 @@ import axios from "axios";
 import { buildAuthorizeUrl } from "../stores/user";
 
 export const api = axios.create({
-  baseURL: import.meta.env.DEV ? "/time-tracker/api" : "/api",
+  baseURL: import.meta.env.DEV ? "/punch/api" : "/api",
   headers: { "Content-Type": "application/json" },
 });
 

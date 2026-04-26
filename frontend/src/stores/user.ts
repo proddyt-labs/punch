@@ -10,8 +10,8 @@ export interface User {
 }
 
 const GATE_URL = import.meta.env.VITE_GATE_URL ?? "http://localhost:3100";
-const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "time-work";
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/time-tracker/auth/callback";
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "punch";
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/punch/auth/callback";
 
 export function buildAuthorizeUrl(): string {
   const params = new URLSearchParams({

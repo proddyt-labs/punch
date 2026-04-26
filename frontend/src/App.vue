@@ -27,7 +27,7 @@ function handleLogout() {
           <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Time Tracker
+          Punch
         </RouterLink>
         <div class="flex items-center gap-6">
           <RouterLink to="/" class="text-sm font-medium transition-colors hover:text-emerald-400" :class="$route.name === 'dashboard' ? 'text-emerald-400' : 'text-gray-400'">
