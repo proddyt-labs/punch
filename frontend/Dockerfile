@@ -3,6 +3,12 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
+ARG VITE_GATE_URL=""
+ARG VITE_CLIENT_ID="time-work"
+ARG VITE_REDIRECT_URI=""
+ENV VITE_GATE_URL=$VITE_GATE_URL
+ENV VITE_CLIENT_ID=$VITE_CLIENT_ID
+ENV VITE_REDIRECT_URI=$VITE_REDIRECT_URI
 RUN npx vite build
 
 FROM nginx:alpine
