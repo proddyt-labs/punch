@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { RouterLink, RouterView, useRouter } from "vue-router";
+import { RouterLink, RouterView } from "vue-router";
 import { useUserStore } from "./stores/user";
 
-const router = useRouter();
 const store = useUserStore();
 
 onMounted(() => {
@@ -12,7 +11,6 @@ onMounted(() => {
 
 function handleLogout() {
   store.logout();
-  router.push("/login");
 }
 </script>
 
