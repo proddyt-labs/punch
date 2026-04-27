@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import History from "../views/History.vue";
+import Report from "../views/Report.vue";
+import Admin from "../views/Admin.vue";
 import AuthCallback from "../views/AuthCallback.vue";
 import QuickAction from "../views/QuickAction.vue";
 import { buildAuthorizeUrl } from "../stores/user";
@@ -11,6 +13,8 @@ const router = createRouter({
     { path: "/auth/callback", name: "callback", component: AuthCallback, meta: { guest: true } },
     { path: "/", name: "dashboard", component: Dashboard },
     { path: "/history", name: "history", component: History },
+    { path: "/report", name: "report", component: Report },
+    { path: "/admin", name: "admin", component: Admin },
     { path: "/quick/:type", name: "quick", component: QuickAction, meta: { bare: true } },
   ],
 });

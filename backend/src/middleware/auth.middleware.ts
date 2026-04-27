@@ -6,6 +6,7 @@ export interface AppUser {
   username: string;
   email: string;
   name: string | null;
+  isAdmin: boolean;
 }
 
 declare global {
@@ -37,7 +38,8 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       return;
     }
 
-    const info = (await resp.json()) as { sub: string; username: string; email?: string };
+    const info = (await resp.json()) as { sub: string; username: string; email?: string; roles?: string[] };
+    const isAdmin = (info.roles ?? []).includes("admin");
 
     // Fast path: find by Gate subject ID
     let user = await prisma.user.findUnique({ where: { gateId: info.sub } });
@@ -64,7 +66,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    req.user = { ...user, isAdmin };
     next();
   } catch (err) {
     console.error("Gate auth error:", err);
@@ -74,7 +76,6 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
 export function getCurrentUser(req: Express.Request): AppUser {
   if (!req.user) throw new Error("User not set on request");
-  // Retorna apenas campos seguros (sem passwordHash, gateId, etc.)
-  const { id, username, email, name } = req.user;
-  return { id, username, email, name };
+  const { id, username, email, name, isAdmin } = req.user;
+  return { id, username, email, name, isAdmin };
 }

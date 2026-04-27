@@ -116,6 +116,37 @@ router.delete("/records/:id", requireAuth, async (req, res) => {
   res.status(204).send();
 });
 
+// Importação em massa (de CSV parseado no frontend)
+router.post("/import", requireAuth, async (req, res) => {
+  const { id: userId } = getCurrentUser(req);
+  const { records: imported } = req.body as {
+    records: { type: string; timestamp: string }[];
+  };
+
+  if (!Array.isArray(imported) || imported.length === 0) {
+    return res.status(400).json({ error: "Nenhum registro fornecido" });
+  }
+
+  if (imported.length > 500) {
+    return res.status(400).json({ error: "Máximo de 500 registros por importação" });
+  }
+
+  const data: { userId: string; type: "CLOCK_IN" | "CLOCK_OUT"; timestamp: Date }[] = [];
+  for (const item of imported) {
+    if (item.type !== "CLOCK_IN" && item.type !== "CLOCK_OUT") {
+      return res.status(400).json({ error: `Tipo inválido: ${item.type}` });
+    }
+    const ts = new Date(item.timestamp);
+    if (isNaN(ts.getTime())) {
+      return res.status(400).json({ error: `Timestamp inválido: ${item.timestamp}` });
+    }
+    data.push({ userId, type: item.type, timestamp: ts });
+  }
+
+  const result = await prisma.attendanceRecord.createMany({ data });
+  res.status(201).json({ imported: result.count });
+});
+
 // Edita o timestamp de um registro
 router.patch("/records/:id", requireAuth, async (req, res) => {
   const { id: userId } = getCurrentUser(req);

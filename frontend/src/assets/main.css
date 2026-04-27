@@ -1,13 +1,31 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --pu-primary: #22D3EE;
-  --pu-mid:     #06B6D4;
-  --pu-dark:    #0E7490;
-  --pu-bg:      #0B1622;
-  --pu-muted:   #67A0B5;
+  --pu-bg:        #04060d;
+  --pu-surface:   #080c14;
+  --pu-border:    rgba(34,211,238,0.08);
+  --pu-border-h:  rgba(34,211,238,0.28);
+  --pu-primary:   #22D3EE;
+  --pu-mid:       #06B6D4;
+  --pu-dark:      #0E7490;
+  --pu-out:       #f97316;
+  --pu-muted:     #475569;
+  --pu-text:      #e2e8f0;
+  --pu-text-dim:  #94a3b8;
 }
 
 @layer base {
-  body { @apply bg-gray-950 text-gray-100 min-h-screen font-sans; }
+  body {
+    background: var(--pu-bg);
+    color: var(--pu-text);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    color-scheme: dark;
+  }
 }
